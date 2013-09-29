@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+
+<script type="text/javascript" src="leap.min.js"></script>
+<script type="text/javascript" src="jquery/jquery.js"></script>
+<script type="text/javascript" src="js/dat.Gui.min.js"></script>
+
+<script type="text/javascript" src="MIDIBridge/lib/Midibridge.js"></script>
+<script type="text/javascript" src="MIDIBridge/lib/Midiselector.js"></script>
+<script type="text/javascript" src="js/setup-connections-direct.js"></script>
+
+	
+		
+<link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+		
+	
+	<style>
+
+	body
+	{
+		background: #EEE;
+	}
+
+	#rules
+	{
+		border: 5px solid #615521;
+		border-radius: 15px;
+		background: #E6E8CC;
+		position:absolute;
+		z-index: -1;
+		margin-right:20px;
+		margin-top:20px;
+		padding:10px;
+		
+	}
+
+	#cont
+	{
+		width:100%;
+
+	}
+	#mycanvas
+	{
+	    margin-top: 10px;
+	    margin-left: auto;
+    	margin-right: auto;
+    	display: block;
+    	height:400px;
+    	width:600px;
+    	border:3px #555 solid
+	}
+
+	#clarific
+	{
+		border: 3px solid #5195F5;
+		border-radius: 25px;
+		background: #DAE5F5;
+		position:absolute;
+		margin-right:20px;
+		margin-top:450px;
+		padding:10px;
+		
+
+	}
+
+
+
+	#signature
+	{
+		float:right;
+	}
+
+	#signature p
+	{
+		color:#A6A6A6;
+		font-size: small;
+	}
+
+	</style>
+
+
+<script type="text/javascript">
+
+var Settings = function() 
+	{
+		this.maxX = 127;
+		this.minX = 0;
+		this.maxY = 127;
+		this.minY = 0;
+		this.maxZ = 127;
+		this.minZ = 0;
+
+		this.MIDIchan = 1;
+		this.Xcont = 0;
+		this.Ycont = 1;
+		this.Zcont = 2;
+		this.default_vals = false;
+		this.Xval_when_out = 0;
+		this.Yval_when_out = 0;
+		this.Zval_when_out = 0;
+	}
+
+	var guitar_on = false;
+	var guitar_out = true;
+
+	var settings = new Settings()
+
+
+	var leapvars =
+	 {
+	 	leapX: 50,
+	 	leapY: 50,
+	 	leapZ:100,
+	 	salv: false
+	 };
+
+
+	 window.onload = function() 
+	 {
+		var gui = new dat.GUI();
+
+		var f1 = gui.addFolder('X');
+		f1.add(settings, 'Xcont'); 
+		f1.add(settings, 'minX', 0, 126).step(1);
+		f1.add(settings, 'maxX', 1, 127).step(1);
+		var f2 = gui.addFolder('Y'); 
+		f2.add(settings, 'Ycont'); 
+		f2.add(settings, 'minY', 0, 126).step(1);
+		f2.add(settings, 'maxY', 1, 127).step(1);
+		var f3 = gui.addFolder('Z');
+		f3.add(settings, 'Zcont');
+		f3.add(settings, 'minZ', 0, 126).step(1);
+		f3.add(settings, 'maxZ', 1, 127).step(1);
+		var f4 = gui.addFolder('When out of sensor range');
+		f4.add(settings,'default_vals'); 
+		f4.add(settings, 'Xval_when_out',0,127);
+		f4.add(settings, 'Yval_when_out',0,127);
+		f4.add(settings, 'Zval_when_out',0,127);
+		
+		f1.open();
+		f2.open();
+		f3.open();
+
+
+
+
+	};
+
+
+
+
+
+
+
+	var controller = new Leap.Controller({enableGestures: true});
+    var region = new Leap.UI.Region(
+    	[-50, 200, -100], 
+    	[200, 300, 100]
+    );
+
+    controller.addStep(new Leap.UI.Cursor())
+    controller.addStep(region.listener({nearThreshold:50}))
+
+
+
+    controller.loop(function(frame, done) { 
+      if (frame.cursorPosition) {
+      	leap_enabled = true;
+
+        var leapPosition = region.mapToXY(
+        	frame.cursorPosition, 300, 150);
+
+        leapvars.leapX = leapPosition[0];
+        leapvars.leapY = leapPosition[1];
+        leapvars.leapZ = leapPosition[2];  	
+        guitar_on = true; 
+        guitar_out = false;
+      }
+      else
+      {
+      	guitar_out = true;
+
+      	if(settings.default_vals)
+      	{
+      		leapvars.leapX = ((settings.Xval_when_out-settings.minX)/settings.maxX-settings.minX)*300;
+      		leapvars.leapY = ((settings.Yval_when_out-settings.minY)/settings.maxY-settings.minY)*150;
+      		leapvars.leapZ = ((settings.Zval_when_out-settings.minZ)/settings.maxZ-settings.minZ)*2;
+
+      		guitar_on = false;
+      	}
+      }
+
+
+
+	
+      done();
+    });
+
+    controller.connection.on('disconnect', function() {
+    	leap_enabled = false;
+    });
+
+
+
+
+
+
+
+
+
+
+//----------------------------MIDI stuff -----------
+
+window.addEventListener('load', function() {
+
+
+$("#start").click(function(){   
+
+        if(!output){
+            messages.innerHTML = "<b>Please select a MIDI output first!</b>";
+            return;
+        }
+        messages.innerHTML = "";
+        
+        sequencePosition = 0;
+        
+        runningInterval = setInterval(MIDILoop, Math.round(midispeed));
+		
+    
+        document.getElementById("stop").classList.add("btn-primary");
+        document.getElementById("start").classList.remove("btn-primary");
+
+    });
+
+
+
+ $("#stop").click(function()
+    {    
+        currentNote = sequenceLength;
+        clearInterval(runningInterval);
+
+        document.getElementById("start").classList.add("btn-primary");
+        document.getElementById("stop").classList.remove("btn-primary");
+    });
+
+
+
+
+    
+    var midiAccess,
+    outputs,
+    output,
+    midispeed = 100;
+    currentNote = 0,
+    sequenceLength = 100,
+    sequencePosition = 0,
+    selectOutput = document.getElementById("outputs"),
+    messages = document.getElementById("messages");
+    //btnStart = document.getElementById("start"),
+    //btnStop = document.getElementById("stop");
+
+    var screenfps = 60;
+
+    drawInterval = setInterval(drawScreen, Math.round(1000/screenfps));
+    
+   
+    
+
+
+
+
+
+    
+
+	function MIDILoop()
+	{
+		
+		//send for X
+
+        noteNumber = settings.Xcont;
+        velocity = (leapvars.leapX/300*(settings.maxX-settings.minX)) + settings.minX;   //0-300   to 0-127
+        if (velocity > settings.maxX)
+        	{velocity = settings.maxX}
+        else if (velocity < settings.minX)
+        	{ velocity = settings.minX}
+
+		midiMessage = midiAccess.createMIDIMessage(midiBridge.CONTROL_CHANGE, 0, noteNumber, velocity, sequencePosition);
+        
+        output.sendMIDIMessage(midiMessage);
+        
+        //console.log("X sending " + velocity + " to port " + settings.Xcont );
+		
+		//send for Y
+
+		noteNumber = settings.Ycont;
+        velocity = (leapvars.leapY/150*(settings.maxY-settings.minY)) + settings.minY;   //0-150   to 0-127
+         if (velocity > settings.maxY)
+        	{velocity = settings.maxY}
+        else if (velocity < settings.minY)
+        	{ velocity = settings.minY}
+
+		midiMessage = midiAccess.createMIDIMessage(midiBridge.CONTROL_CHANGE, 0, noteNumber, velocity, sequencePosition);
+        
+        output.sendMIDIMessage(midiMessage);
+        
+        console.log("Y sending " + velocity + " to port " + settings.Ycont );
+
+
+		//send for Z
+
+
+		noteNumber = settings.Zcont;
+        velocity = (leapvars.leapZ/2*(settings.maxZ-settings.minZ)) + settings.minZ;   //0-2   to 0-127
+         if (velocity > settings.maxZ)
+        	{velocity = settings.maxZ}
+        else if (velocity < settings.minZ)
+        	{ velocity = settings.minZ}
+
+		midiMessage = midiAccess.createMIDIMessage(midiBridge.CONTROL_CHANGE, 0, noteNumber, velocity, sequencePosition);
+        
+        output.sendMIDIMessage(midiMessage);
+        
+        console.log("Z sending " + velocity + " to port " + settings.Zcont );
+
+
+
+	}  
+
+
+
+
+
+
+
+
+    
+    
+    
+    midiBridge.init(function(_midiAccess){
+        
+        midiAccess = _midiAccess;
+        outputs = midiAccess.enumerateOutputs();
+        
+        //create dropdown menu for MIDI outputs and add an event listener to the change event
+        midiBridge.createMIDIDeviceSelector(selectOutput,outputs,"ouput",function(deviceId){
+            if(output){
+                output.close();
+            }
+            output = midiAccess.getOutput(outputs[deviceId]);
+            messages.innerHTML = "connected to " + output.deviceName + "<br/>";
+        });
+    });
+});
+
+
+
+//---------------------DRAW------------------------------
+
+	function drawScreen()
+	{
+		
+		leap_drawScreen();
+		
+
+		var imgX = leapvars.leapX;
+		var imgY = leapvars.leapY;
+		var imgZ = leapvars.leapZ + 1;
+
+
+		var c=document.getElementById("mycanvas");
+		var ctx=c.getContext("2d");
+		
+		if(guitar_out)
+		{
+			ctx.fillStyle='red';
+			ctx.font="16px Arial";
+			ctx.fillText('Guitar out of sensor range', 10, 130);
+		}
+
+		if (guitar_on)
+		{
+			ctx.fillStyle='red';	
+		}
+		else
+		{
+			
+			ctx.fillStyle='#00CCFF';
+		}
+		
+		ctx.strokeStyle = "#000";
+		ctx.beginPath();
+        ctx.arc(imgX,imgY,12*imgZ,0,2*Math.PI);
+        ctx.closePath();
+        ctx.fill();
+        //console.log("X:" + leapvars.leapX + "Y: " + leapvars.leapY);
+        //console.log("Z: " + imgZ + " X:" + imgX + " Y: " + imgY);
+	}
+
+
+
+	function leap_drawScreen()
+	{
+	  var c=document.getElementById("mycanvas");
+	  var ctx=c.getContext("2d");
+	  ctx.clearRect(0,0,c.width,c.height);
+	  ctx.fillStyle="#FF3399";
+	  ctx.beginPath();
+	  ctx.arc(400,200,5,0,2*Math.PI);
+	  ctx.moveTo(0,200);
+	  ctx.lineTo(800,200);
+	  ctx.moveTo(400,0);
+	  ctx.lineTo(400,400);
+	  ctx.stroke();
+	  ctx.closePath();
+	}
+
+
+
+
+</script>
+
+
+	</head>
+		
+	<body>
+
+		
+		<div id="rules" class="span3">	
+			<h4> Press <b>Start</b> and this app will send a stream of MIDI messages to MIDI Port 1. </h4>
+			<p>
+			The <a href="http://www.leapmotion.com" target="_blank">Leap Motion Sensor</a> can detect your guitar's head as if it were a hand. <br>
+			X, Y and Z coordinates of your guitar are sent in 3 separate MIDI modulation messages that you can then open in Reason, MAX, GuitarRig, FL Studio or whatever you prefer and map to any variable you want.
+			<br>
+			<i>(port1, Xcont, Leap X Coordinate)</i>
+		</p>
+
+		<div id="signature">
+				<p>App by: <a href="http://nearnshaw.github.com" target="blank">Nicolas Earnshaw</a></p>
+			</div>
+
+		</div>
+
+
+		
+		<div id="cont" class="span6">
+			<canvas id="mycanvas" ></canvas>
+		</div>
+	
+
+		<div id="clarific" class="span3">
+            
+            <div id="messages"><b>Select a MIDI output</b></div>
+            <br>
+            <!-- dropdown menu for selecting a MIDI output -->
+            <select id="outputs"></select>
+
+            <!-- button that starts the sequence -->
+            <a id="start" class="btn btn-primary btn-medium pull-left">
+            Start
+            </a>
+            
+
+            <!-- button that stops the sequence -->
+             <a id="stop" class="btn btn-medium pull-left" style="margin-left:7px">
+            Stop
+            </a>
+
+           
+        </div>
+
+
+
+
+
+
+
+
+	
+		</body>
+
+</html>
