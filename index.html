@@ -83,6 +83,8 @@
 
 <script type="text/javascript">
 
+
+//-------------------------GUI stuff-----------------
 var Settings = function() 
 	{
 		this.maxX = 127;
@@ -100,6 +102,9 @@ var Settings = function()
 		this.Xval_when_out = 0;
 		this.Yval_when_out = 0;
 		this.Zval_when_out = 0;
+		this.Extra = 3;
+		this.Extra_when_out = 0;
+		this.Extra_when_in = 127;
 	}
 
 	var guitar_on = false;
@@ -122,29 +127,33 @@ var Settings = function()
 		var gui = new dat.GUI();
 
 		var f1 = gui.addFolder('X');
-		f1.add(settings, 'Xcont'); 
+		f1.add(settings, 'Xcont').step(1); 
 		f1.add(settings, 'minX', 0, 126).step(1);
 		f1.add(settings, 'maxX', 1, 127).step(1);
 		var f2 = gui.addFolder('Y'); 
-		f2.add(settings, 'Ycont'); 
+		f2.add(settings, 'Ycont').step(1); 
 		f2.add(settings, 'minY', 0, 126).step(1);
 		f2.add(settings, 'maxY', 1, 127).step(1);
 		var f3 = gui.addFolder('Z');
-		f3.add(settings, 'Zcont');
+		f3.add(settings, 'Zcont').step(1);
 		f3.add(settings, 'minZ', 0, 126).step(1);
 		f3.add(settings, 'maxZ', 1, 127).step(1);
-		var f4 = gui.addFolder('When out of sensor range');
+		var f4 = gui.addFolder('Defaults when out of sensor range');
 		f4.add(settings,'default_vals'); 
-		f4.add(settings, 'Xval_when_out',0,127);
-		f4.add(settings, 'Yval_when_out',0,127);
-		f4.add(settings, 'Zval_when_out',0,127);
-		
+		f4.add(settings, 'Xval_when_out',0,127).step(1);
+		f4.add(settings, 'Yval_when_out',0,127).step(1);
+		f4.add(settings, 'Zval_when_out',0,127).step(1);
+		var f5 = gui.addFolder('Extra on off message');
+		f5.add(settings, 'Extra').step(1);
+		f5.add(settings, 'Extra_when_out',0,127).step(1);
+		f5.add(settings, 'Extra_when_in',0,127).step(1);
+
 		f1.open();
 		f2.open();
 		f3.open();
 
 
-
+		startLeap();
 
 	};
 
@@ -152,7 +161,10 @@ var Settings = function()
 
 
 
+//-------------------------leap stuff-------------------
 
+ function startLeap() 
+	 {
 
 	var controller = new Leap.Controller({enableGestures: true});
     var region = new Leap.UI.Region(
@@ -174,7 +186,7 @@ var Settings = function()
 
         leapvars.leapX = leapPosition[0];
         leapvars.leapY = leapPosition[1];
-        leapvars.leapZ = leapPosition[2];  	
+        leapvars.leapZ = leapPosition[2]*-1;  	
         guitar_on = true; 
         guitar_out = false;
       }
@@ -190,6 +202,7 @@ var Settings = function()
 
       		guitar_on = false;
       	}
+
       }
 
 
@@ -203,7 +216,7 @@ var Settings = function()
     });
 
 
-
+};
 
 
 
@@ -270,6 +283,18 @@ $("#start").click(function(){
 
 
 
+    function sendMIDI(port, value)
+    {
+		var noteNumber = port;
+        var velocity =  value;
+
+        midiMessage = midiAccess.createMIDIMessage(midiBridge.CONTROL_CHANGE, 0, noteNumber, velocity, sequencePosition);
+        
+        output.sendMIDIMessage(midiMessage);
+
+        console.log(port + " sending value " + value);
+
+    };
 
 
     
@@ -325,9 +350,20 @@ $("#start").click(function(){
         console.log("Z sending " + velocity + " to port " + settings.Zcont );
 
 
+        //send for Extra
+
+        if (guitar_out == true)
+        {
+        sendMIDI(settings.Extra, settings.Extra_when_out);
+        //console.log("guitar out");
+    	}
+    	else
+    	{
+    	sendMIDI(settings.Extra, settings.Extra_when_in);	
+    	//console.log("guitar in");
+    	}
 
 	}  
-
 
 
 
@@ -366,7 +402,7 @@ $("#start").click(function(){
 
 		var imgX = leapvars.leapX;
 		var imgY = leapvars.leapY;
-		var imgZ = leapvars.leapZ + 1;
+		var imgZ = (leapvars.leapZ*-0.9) + 1;
 
 
 		var c=document.getElementById("mycanvas");
@@ -381,7 +417,19 @@ $("#start").click(function(){
 
 		if (guitar_on)
 		{
-			ctx.fillStyle='red';	
+			var rval = Math.floor(Math.abs(leapvars.leapZ*leapvars.leapZ)*100);
+			if (rval > 99)
+			{
+				rval = 99
+			}
+			else if (rval < 10)
+				{ 
+					rval = "00"
+				}
+			var hsh = "#";
+			var rd = hsh.concat("FF",rval,rval); 
+			ctx.fillStyle=rd;	
+			//console.log(rd);
 		}
 		else
 		{
