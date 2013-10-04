@@ -110,7 +110,14 @@ var Settings = function()
 	var guitar_on = false;
 	var guitar_out = true;
 
+	var oldX = 0;
+	var oldY = 0;
+	var oldZ = 0;
+	var oldExtra = 0;
+
+
 	var settings = new Settings()
+
 
 
 	var leapvars =
@@ -143,7 +150,7 @@ var Settings = function()
 		f4.add(settings, 'Xval_when_out',0,127).step(1);
 		f4.add(settings, 'Yval_when_out',0,127).step(1);
 		f4.add(settings, 'Zval_when_out',0,127).step(1);
-		var f5 = gui.addFolder('Extra on off message');
+		var f5 = gui.addFolder('Extra on/off message');
 		f5.add(settings, 'Extra').step(1);
 		f5.add(settings, 'Extra_when_out',0,127).step(1);
 		f5.add(settings, 'Extra_when_in',0,127).step(1);
@@ -303,66 +310,79 @@ $("#start").click(function(){
 	{
 		
 		//send for X
+		velocity = Math.floor((leapvars.leapX/300*(settings.maxX-settings.minX)) + settings.minX);   //0-300   to 0-127
 
-        noteNumber = settings.Xcont;
-        velocity = (leapvars.leapX/300*(settings.maxX-settings.minX)) + settings.minX;   //0-300   to 0-127
-        if (velocity > settings.maxX)
-        	{velocity = settings.maxX}
-        else if (velocity < settings.minX)
-        	{ velocity = settings.minX}
+		if (velocity != oldX)
+		{
+	        noteNumber = settings.Xcont;
+	        if (velocity > settings.maxX)
+	        	{velocity = settings.maxX}
+	        else if (velocity < settings.minX)
+	        	{ velocity = settings.minX}
 
-		midiMessage = midiAccess.createMIDIMessage(midiBridge.CONTROL_CHANGE, 0, noteNumber, velocity, sequencePosition);
-        
-        output.sendMIDIMessage(midiMessage);
-        
-        //console.log("X sending " + velocity + " to port " + settings.Xcont );
+			midiMessage = midiAccess.createMIDIMessage(midiBridge.CONTROL_CHANGE, 0, noteNumber, velocity, sequencePosition);
+	        
+	        output.sendMIDIMessage(midiMessage);
+
+	        console.log("X sending " + velocity + " to port " + settings.Xcont );
+	     	oldX = velocity;
+	     }   
+	        
 		
 		//send for Y
+		velocity = Math.floor((leapvars.leapY/150*(settings.maxY-settings.minY)) + settings.minY);   //0-150   to 0-127
+		if (velocity != oldY)
+		{
+			noteNumber = settings.Ycont;
+	         if (velocity > settings.maxY)
+	        	{velocity = settings.maxY}
+	        else if (velocity < settings.minY)
+	        	{ velocity = settings.minY}
 
-		noteNumber = settings.Ycont;
-        velocity = (leapvars.leapY/150*(settings.maxY-settings.minY)) + settings.minY;   //0-150   to 0-127
-         if (velocity > settings.maxY)
-        	{velocity = settings.maxY}
-        else if (velocity < settings.minY)
-        	{ velocity = settings.minY}
-
-		midiMessage = midiAccess.createMIDIMessage(midiBridge.CONTROL_CHANGE, 0, noteNumber, velocity, sequencePosition);
-        
-        output.sendMIDIMessage(midiMessage);
-        
-        console.log("Y sending " + velocity + " to port " + settings.Ycont );
-
+			midiMessage = midiAccess.createMIDIMessage(midiBridge.CONTROL_CHANGE, 0, noteNumber, velocity, sequencePosition);
+	        
+	        output.sendMIDIMessage(midiMessage);
+	        
+	        console.log("Y sending " + velocity + " to port " + settings.Ycont );
+	        oldY = velocity;
+	    }
 
 		//send for Z
 
+		velocity = Math.floor(((leapvars.leapZ+1)/2*(settings.maxZ-settings.minZ)) + settings.minZ);   //0-2   to 0-127
+		if (velocity != oldZ)
+		{			
+			noteNumber = settings.Zcont;
+	         if (velocity > settings.maxZ)
+	        	{velocity = settings.maxZ}
+	        else if (velocity < settings.minZ)
+	        	{ velocity = settings.minZ}
 
-		noteNumber = settings.Zcont;
-        velocity = (leapvars.leapZ/2*(settings.maxZ-settings.minZ)) + settings.minZ;   //0-2   to 0-127
-         if (velocity > settings.maxZ)
-        	{velocity = settings.maxZ}
-        else if (velocity < settings.minZ)
-        	{ velocity = settings.minZ}
-
-		midiMessage = midiAccess.createMIDIMessage(midiBridge.CONTROL_CHANGE, 0, noteNumber, velocity, sequencePosition);
-        
-        output.sendMIDIMessage(midiMessage);
-        
-        console.log("Z sending " + velocity + " to port " + settings.Zcont );
-
+			midiMessage = midiAccess.createMIDIMessage(midiBridge.CONTROL_CHANGE, 0, noteNumber, velocity, sequencePosition);
+	        
+	        output.sendMIDIMessage(midiMessage);
+	        
+	        console.log("Z sending " + velocity + " to port " + settings.Zcont );
+	        oldZ = velocity;
+	    }
 
         //send for Extra
+        if (guitar_out != oldExtra)
+		{
+	        if (guitar_out == true)
+	        {
+	        sendMIDI(settings.Extra, settings.Extra_when_out);
+	        console.log("extra says guitar out");
+	        oldExtra = false;
+	    	}
+	    	else
+	    	{
+	    	sendMIDI(settings.Extra, settings.Extra_when_in);	
+	    	console.log("extra says guitar in");
+	    	oldExtra = true;
+	    	}
 
-        if (guitar_out == true)
-        {
-        sendMIDI(settings.Extra, settings.Extra_when_out);
-        //console.log("guitar out");
-    	}
-    	else
-    	{
-    	sendMIDI(settings.Extra, settings.Extra_when_in);	
-    	//console.log("guitar in");
-    	}
-
+	   	}
 	}  
 
 
@@ -402,7 +422,7 @@ $("#start").click(function(){
 
 		var imgX = leapvars.leapX;
 		var imgY = leapvars.leapY;
-		var imgZ = (leapvars.leapZ*-0.9) + 1;
+		var imgZ = (leapvars.leapZ*-1) + 1;
 
 
 		var c=document.getElementById("mycanvas");
@@ -439,7 +459,7 @@ $("#start").click(function(){
 		
 		ctx.strokeStyle = "#000";
 		ctx.beginPath();
-        ctx.arc(imgX,imgY,12*imgZ,0,2*Math.PI);
+        ctx.arc(imgX,imgY,12*(imgZ+0.1),0,2*Math.PI);
         ctx.closePath();
         ctx.fill();
         //console.log("X:" + leapvars.leapX + "Y: " + leapvars.leapY);
