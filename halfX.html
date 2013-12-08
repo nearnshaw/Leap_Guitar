@@ -118,6 +118,8 @@ var Settings = function()
 
 	var settings = new Settings()
 
+	var c = 0;
+	var ctx = 0;
 
 
 	var leapvars =
@@ -160,6 +162,9 @@ var Settings = function()
 		f3.open();
 
 
+		c=document.getElementById("mycanvas");
+		ctx=c.getContext("2d");
+
 		startLeap();
 
 	};
@@ -175,8 +180,8 @@ var Settings = function()
 
 	var controller = new Leap.Controller({enableGestures: true});
     var region = new Leap.UI.Region(
-    	[-50, 200, -100], 
-    	[200, 300, 100]
+    	[-50, 250, -100], 
+    	[200, 350, 100]
     );
 
     controller.addStep(new Leap.UI.Cursor())
@@ -310,11 +315,30 @@ $("#start").click(function(){
 	{
 		
 		//send for X
-		velocity = Math.floor((leapvars.leapX/300*(settings.maxX-settings.minX)) + settings.minX);   //0-300   to 0-127
+		if (leapvars.leapX<150)
+		{
+				velocity=0;
+		}
+		else
+		{
+		velocity = Math.floor(((leapvars.leapX-150)/150*(settings.maxX-settings.minX)) + settings.minX);   //0-300   to 0-127
+		}
 
 		if (velocity != oldX)
 		{
+	        
+			if (leapvars.leapZ < 0)
+			{
 	        noteNumber = settings.Xcont;
+	        var othernum = 5;
+	        }
+	        else
+	        {
+	        noteNumber = 5;	
+	        var othernum = settings.Xcont;
+	        //console.log("sending to alternative 5");
+	        }
+
 	        if (velocity > settings.maxX)
 	        	{velocity = settings.maxX}
 	        else if (velocity < settings.minX)
@@ -326,6 +350,10 @@ $("#start").click(function(){
 
 	        //console.log("X sending " + velocity + " to port " + settings.Xcont );
 	     	oldX = velocity;
+
+	     	midiMessage = midiAccess.createMIDIMessage(midiBridge.CONTROL_CHANGE, 0, othernum, 0, sequencePosition);
+
+	     	output.sendMIDIMessage(midiMessage);
 	     }   
 	        
 		
@@ -424,16 +452,33 @@ $("#start").click(function(){
 		var imgY = leapvars.leapY;
 		var imgZ = (leapvars.leapZ*-1) + 1;
 
-
-		var c=document.getElementById("mycanvas");
-		var ctx=c.getContext("2d");
 		
+
 		if(guitar_out)
 		{
 			ctx.fillStyle='red';
 			ctx.font="16px Arial";
 			ctx.fillText('Guitar out of sensor range', 10, 130);
 		}
+
+
+
+
+
+		if (leapvars.leapX<150)
+		{
+
+			var bval = 80;
+		}
+		else if (imgZ>1)
+		{
+			var bval = "FF";
+		}
+		else
+		{
+			var bval = "00";	
+		}
+
 
 		if (guitar_on)
 		{
@@ -447,7 +492,7 @@ $("#start").click(function(){
 					rval = "00"
 				}
 			var hsh = "#";
-			var rd = hsh.concat("FF",rval,rval); 
+			var rd = hsh.concat(bval,rval,rval); 
 			ctx.fillStyle=rd;	
 			//console.log(rd);
 		}
@@ -456,12 +501,15 @@ $("#start").click(function(){
 			
 			ctx.fillStyle='#00CCFF';
 		}
+
+		
 		
 		ctx.strokeStyle = "#000";
 		ctx.beginPath();
         ctx.arc(imgX,imgY,12*(imgZ+0.1),0,2*Math.PI);
         ctx.closePath();
         ctx.fill();
+
         //console.log("X:" + leapvars.leapX + "Y: " + leapvars.leapY);
         //console.log("Z: " + imgZ + " X:" + imgX + " Y: " + imgY);
 	}
@@ -470,18 +518,15 @@ $("#start").click(function(){
 
 	function leap_drawScreen()
 	{
-	  var c=document.getElementById("mycanvas");
-	  var ctx=c.getContext("2d");
+
 	  ctx.clearRect(0,0,c.width,c.height);
-	  ctx.fillStyle="#FF3399";
+	  ctx.strokeStyle="rgba(0, 0, 0, 0.8)";;
 	  ctx.beginPath();
-	  ctx.arc(400,200,5,0,2*Math.PI);
-	  ctx.moveTo(0,200);
-	  ctx.lineTo(800,200);
 	  ctx.moveTo(400,0);
 	  ctx.lineTo(400,400);
 	  ctx.stroke();
 	  ctx.closePath();
+	  ctx.fill();
 	}
 
 

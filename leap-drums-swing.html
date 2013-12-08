@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 
 <script type="text/javascript" src="leap.min.js"></script>
-<script type="text/javascript" src="jquery/jquery.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
 <script type="text/javascript" src="js/dat.Gui.min.js"></script>
 
 <script type="text/javascript" src="MIDIBridge/lib/Midibridge.js"></script>
@@ -105,6 +105,8 @@ var Settings = function()
 		this.Extra = 3;
 		this.Extra_when_out = 0;
 		this.Extra_when_in = 127;
+		this.TriggerA = 4;
+		this.TriggerB = 5;
 	}
 
 	var guitar_on = false;
@@ -114,6 +116,13 @@ var Settings = function()
 	var oldY = 0;
 	var oldZ = 0;
 	var oldExtra = 0;
+	var oldTriggerA = false;
+	var oldTriggerB = false;
+	var TriggerAtail = false;
+
+	var oldXpos = 0;
+	var oldYpos = 0;
+	var oldZpos = 0;
 
 
 	var settings = new Settings()
@@ -124,8 +133,10 @@ var Settings = function()
 	 {
 	 	leapX: 50,
 	 	leapY: 50,
-	 	leapZ:100,
-	 	salv: false
+	 	leapZ:1,
+	 	salv: false,
+	 	TriggerA: false,
+	 	TriggerB: false
 	 };
 
 
@@ -154,6 +165,8 @@ var Settings = function()
 		f5.add(settings, 'Extra').step(1);
 		f5.add(settings, 'Extra_when_out',0,127).step(1);
 		f5.add(settings, 'Extra_when_in',0,127).step(1);
+		f5.add(settings, 'TriggerA').step(1);
+		f5.add(settings, 'TriggerB').step(1);
 
 		f1.open();
 		f2.open();
@@ -175,8 +188,8 @@ var Settings = function()
 
 	var controller = new Leap.Controller({enableGestures: true});
     var region = new Leap.UI.Region(
-    	[-50, 200, -100], 
-    	[200, 300, 100]
+    	[-50, 250, -100], 
+    	[200, 350, 100]
     );
 
     controller.addStep(new Leap.UI.Cursor())
@@ -185,8 +198,23 @@ var Settings = function()
 
 
     controller.loop(function(frame, done) { 
-      if (frame.cursorPosition) {
+      //console.log(frame.fingers.length + "fingers");
+      if(frame.fingers.length > 3)
+      {
+      	console.log("STOP!!!");
+      	leapvars.TriggerA = true;
+      	leapvars.TriggerB = false;
+      }
+      else if(frame.fingers.length > 1 && oldTriggerA == false && TriggerAtail == false)
+      {
+      	console.log("two fingers");
+      	leapvars.TriggerA = false;
+      	leapvars.TriggerB = true;
+      }
+      else if (frame.cursorPosition) {
       	leap_enabled = true;
+      	leapvars.TriggerA = false;
+      	leapvars.TriggerB = false;
 
         var leapPosition = region.mapToXY(
         	frame.cursorPosition, 300, 150);
@@ -200,15 +228,19 @@ var Settings = function()
       else
       {
       	guitar_out = true;
+      	leapvars.TriggerA = false;
+      	leapvars.TriggerB = false;
 
       	if(settings.default_vals)
       	{
-      		leapvars.leapX = ((settings.Xval_when_out-settings.minX)/settings.maxX-settings.minX)*300;
+      		leapvars.leapX = ((settings.Xval_when_out-settings.minX)/settings.maxX-settings.minX)*150;
       		leapvars.leapY = ((settings.Yval_when_out-settings.minY)/settings.maxY-settings.minY)*150;
       		leapvars.leapZ = ((settings.Zval_when_out-settings.minZ)/settings.maxZ-settings.minZ)*2;
 
       		guitar_on = false;
       	}
+
+      	
 
       }
 
@@ -304,17 +336,54 @@ $("#start").click(function(){
     };
 
 
+    //new midi note, not control
+    function newMIDI(port, value)
+    {
+		var noteNumber = port;
+        var velocity =  value;
+
+        midiMessage = midiAccess.createMIDIMessage(midiBridge.NOTE_ON, 0, noteNumber, velocity, sequencePosition);
+        
+        output.sendMIDIMessage(midiMessage);
+
+        //console.log(port + " sending value " + value);
+
+    };
+
+
     
 
 	function MIDILoop()
 	{
 		
+	
 		//send for X
-		velocity = Math.floor((leapvars.leapX/300*(settings.maxX-settings.minX)) + settings.minX);   //0-300   to 0-127
+		if (leapvars.leapX<150)
+		{
+				velocity=0;
+		}
+		else
+		{
+		velocity = Math.floor(((leapvars.leapX-150)/150*(settings.maxX-settings.minX)) + settings.minX);   //0-300   to 0-127
+		}
 
 		if (velocity != oldX)
 		{
-	        noteNumber = settings.Xcont;
+	        
+			// if (leapvars.leapZ < 0)
+			// {
+	  //       noteNumber = settings.Xcont;
+	  //       var othernum = 5;
+	  //       }
+	  //       else
+	  //       {
+	  //       noteNumber = 5;	
+	  //       var othernum = settings.Xcont;
+	  //       //console.log("sending to alternative 5");
+	  //       }
+	  		noteNumber = settings.Xcont;
+	  		var othernum = 5;
+
 	        if (velocity > settings.maxX)
 	        	{velocity = settings.maxX}
 	        else if (velocity < settings.minX)
@@ -326,6 +395,10 @@ $("#start").click(function(){
 
 	        //console.log("X sending " + velocity + " to port " + settings.Xcont );
 	     	oldX = velocity;
+
+	     	midiMessage = midiAccess.createMIDIMessage(midiBridge.CONTROL_CHANGE, 0, othernum, 0, sequencePosition);
+
+	     	output.sendMIDIMessage(midiMessage);
 	     }   
 	        
 		
@@ -348,8 +421,25 @@ $("#start").click(function(){
 	    }
 
 		//send for Z
+		//console.log(leapvars.leapZ);
+		if (leapvars.leapZ<0)
+		{
+			var movement=Math.floor(getDist(leapvars.leapX, leapvars.leapY, leapvars.leapZ, oldXpos, oldYpos, oldZpos));
+			//velocity = Math.floor(movement/150*(settings.maxZ-settings.minZ)) + settings.minZ;   //0-300   to 0-127;
+			velocity = Math.floor(Math.pow(movement,2)/150/150*(settings.maxZ-settings.minZ)) + settings.minZ;   //0-300   to 0-127;
 
-		velocity = Math.floor(((leapvars.leapZ+1)/2*(settings.maxZ-settings.minZ)) + settings.minZ);   //0-2   to 0-127
+
+		}
+		else
+		{
+			//velocity = Math.floor(((leapvars.leapZ-150)/150*(settings.maxZ-settings.minX)) + settings.minX);   //0-300   to 0-127;
+			velocity = Math.floor(((leapvars.leapZ+1)/2*(settings.maxZ-settings.minZ)) + settings.minZ);   //0-2   to 0-127
+			if (velocity< 10)
+				{velocity = 0;}
+		}
+		//console.log(velocity);
+
+		
 		if (velocity != oldZ)
 		{			
 			noteNumber = settings.Zcont;
@@ -377,12 +467,56 @@ $("#start").click(function(){
 	    	}
 	    	else
 	    	{
-	    	sendMIDI(settings.Extra, settings.Extra_when_in);	
+	    	newMIDI(settings.Extra, settings.Extra_when_in);	
 	    	//console.log("extra says guitar in");
 	    	oldExtra = true;
 	    	}
 
 	   	}
+
+	   	//send for TriggerA
+	   	if (leapvars.TriggerA != oldTriggerA)
+	   	{
+	   		if (leapvars.TriggerA == true)
+	        {
+		        sendMIDI(settings.TriggerA, 127);
+		        //console.log("TriggerA on");
+	    	}
+	    	else
+	    	{
+	    	  	sendMIDI(settings.TriggerA, 0);
+		        //console.log("TriggerA off");
+	    	}
+	   	}
+
+	   	//send for TriggerB
+	   		if (leapvars.TriggerB != oldTriggerB)
+	   	{
+	   		if (leapvars.TriggerB == true)
+	        {
+		        sendMIDI(settings.TriggerB, 127);
+		        //console.log("TriggerB on");
+	    	}
+	    	else
+	    	{
+	    	  	sendMIDI(settings.TriggerB, 0);
+		        //console.log("TriggerB off");
+	    	}
+	   	}
+
+	   	// if(leapvars.TriggerA == false && oldTriggerA == true && TriggerAtail == false)
+     //  	{
+     //  		TriggerAtail = true;
+     //  		var tail = setTimeout(function(){TriggerAtail = false; console.log("tail ended")},300 );
+
+     //  	}
+
+
+	   	oldXpos = leapvars.leapX;
+	   	oldYpos = leapvars.leapY;
+	   	oldZpos = leapvars.leapZ;
+	   	oldTriggerA = leapvars.TriggerA;
+	   	oldTriggerB = leapvars.TriggerB;
 	}  
 
 
@@ -411,6 +545,15 @@ $("#start").click(function(){
 });
 
 
+function getDist(x, y, z, oldx, oldy, oldz)
+{
+	var dx = Math.abs(x - oldx);
+	var dy = Math.abs(y - oldy);
+	var dz = Math.abs(z - oldz);
+	//return Math.sqrt(Math.pow(dx,2)+Math.pow(dy,2));
+	var plaindist = Math.sqrt(Math.pow(dx,2)+Math.pow(dy,2));
+	return Math.sqrt(Math.pow(plaindist,2)+Math.pow(dz,2));
+}
 
 //---------------------DRAW------------------------------
 
@@ -432,8 +575,21 @@ $("#start").click(function(){
 		{
 			ctx.fillStyle='red';
 			ctx.font="16px Arial";
-			ctx.fillText('Guitar out of sensor range', 10, 130);
+			ctx.fillText('Sitck out of sensor range', 10, 130);
 		}
+
+
+
+
+	 	if (imgZ>1)
+		{
+			var bval = "FF";
+		}
+		else
+		{
+			var bval = "00";	
+		}
+
 
 		if (guitar_on)
 		{
@@ -447,7 +603,7 @@ $("#start").click(function(){
 					rval = "00"
 				}
 			var hsh = "#";
-			var rd = hsh.concat("FF",rval,rval); 
+			var rd = hsh.concat(bval,rval,rval); 
 			ctx.fillStyle=rd;	
 			//console.log(rd);
 		}
@@ -456,6 +612,8 @@ $("#start").click(function(){
 			
 			ctx.fillStyle='#00CCFF';
 		}
+
+		
 		
 		ctx.strokeStyle = "#000";
 		ctx.beginPath();

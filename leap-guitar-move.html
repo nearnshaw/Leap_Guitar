@@ -93,11 +93,15 @@ var Settings = function()
 		this.minY = 0;
 		this.maxZ = 127;
 		this.minZ = 0;
+		this.minMov = 0;
+		this.maxMov = 127;
 
 		this.MIDIchan = 1;
 		this.Xcont = 0;
 		this.Ycont = 1;
 		this.Zcont = 2;
+		this.Movcont = 4;
+		this.sensitivity= 1;
 		this.default_vals = false;
 		this.Xval_when_out = 0;
 		this.Yval_when_out = 0;
@@ -115,9 +119,17 @@ var Settings = function()
 	var oldZ = 0;
 	var oldExtra = 0;
 
+	var movement = 0;
+	var oldXpos = 0;
+	var oldYpos = 0;
+	var oldZpos = 0;
+	var oldMove = 0;
+
 
 	var settings = new Settings()
 
+	var c = 0;
+	var ctx = 0;
 
 
 	var leapvars =
@@ -145,20 +157,31 @@ var Settings = function()
 		f3.add(settings, 'Zcont').step(1);
 		f3.add(settings, 'minZ', 0, 126).step(1);
 		f3.add(settings, 'maxZ', 1, 127).step(1);
+		var fMov = gui.addFolder('movement');
+		fMov.add(settings, 'Movcont').step(1);
+		fMov.add(settings, 'minMov', 0, 126).step(1);
+		fMov.add(settings, 'maxMov', 0, 126).step(1);
+		fMov.add(settings, 'sensitivity', 0.25, 4).step(0.25);
+		var f5 = gui.addFolder('Extra on/off message');
+		f5.add(settings, 'Extra').step(1);
+		f5.add(settings, 'Extra_when_out',0,127).step(1);
+		f5.add(settings, 'Extra_when_in',0,127).step(1);
 		var f4 = gui.addFolder('Defaults when out of sensor range');
 		f4.add(settings,'default_vals'); 
 		f4.add(settings, 'Xval_when_out',0,127).step(1);
 		f4.add(settings, 'Yval_when_out',0,127).step(1);
 		f4.add(settings, 'Zval_when_out',0,127).step(1);
-		var f5 = gui.addFolder('Extra on/off message');
-		f5.add(settings, 'Extra').step(1);
-		f5.add(settings, 'Extra_when_out',0,127).step(1);
-		f5.add(settings, 'Extra_when_in',0,127).step(1);
+		
+
+		
 
 		f1.open();
 		f2.open();
 		f3.open();
+		fMov.open();
 
+		c=document.getElementById("mycanvas");
+		ctx=c.getContext("2d");
 
 		startLeap();
 
@@ -383,6 +406,37 @@ $("#start").click(function(){
 	    	}
 
 	   	}
+
+	   	//send for Move
+	   	movement=Math.floor(getDist(leapvars.leapX, leapvars.leapY, leapvars.leapZ, oldXpos, oldYpos, oldZpos));
+			//velocity = Math.floor(movement/150*(settings.maxZ-settings.minZ)) + settings.minZ;   //0-300   to 0-127;
+		velocity = movement*settings.sensitivity;
+		//velocity = Math.floor(Math.pow(movement,2)/150/150*(settings.maxZ-settings.minZ)) + settings.minZ;   //0-300   to 0-127;
+		if (velocity != oldMove)
+		{
+			noteNumber = settings.Movcont;
+
+	         if (velocity > settings.maxMov)
+	        	{velocity = settings.maxMov}
+	        else if (velocity < settings.minMov)
+	        	{ velocity = settings.minMov}
+
+			midiMessage = midiAccess.createMIDIMessage(midiBridge.CONTROL_CHANGE, 0, noteNumber, velocity, sequencePosition);
+	        
+	        output.sendMIDIMessage(midiMessage);
+	        
+	        //console.log("Y sending " + velocity + " to port " + settings.Ycont );
+	        oldMove = velocity;
+	    }
+
+
+
+
+		oldXpos = leapvars.leapX;
+	   	oldYpos = leapvars.leapY;
+	   	oldZpos = leapvars.leapZ;
+	   	oldMove = movement;
+
 	}  
 
 
@@ -411,10 +465,19 @@ $("#start").click(function(){
 });
 
 
+function getDist(x, y, z, oldx, oldy, oldz)
+{
+	var dx = Math.abs(x - oldx);
+	var dy = Math.abs(y - oldy);
+	var dz = Math.abs(z - oldz)*150;
+	//return Math.sqrt(Math.pow(dx,2)+Math.pow(dy,2));
+	var plaindist = Math.sqrt(Math.pow(dx,2)+Math.pow(dy,2));
+	return Math.sqrt(Math.pow(plaindist,2)+Math.pow(dz,2));
+}
+
 
 //---------------------DRAW------------------------------
-
-	function drawScreen()
+function drawScreen()
 	{
 		
 		leap_drawScreen();
@@ -425,8 +488,8 @@ $("#start").click(function(){
 		var imgZ = (leapvars.leapZ*-1) + 1;
 
 
-		var c=document.getElementById("mycanvas");
-		var ctx=c.getContext("2d");
+		
+		
 		
 		if(guitar_out)
 		{
@@ -435,19 +498,24 @@ $("#start").click(function(){
 			ctx.fillText('Guitar out of sensor range', 10, 130);
 		}
 
+		
+
+
+
+
+		var bval = 80;
+		
+		
+
 		if (guitar_on)
 		{
-			var rval = Math.floor(Math.abs(leapvars.leapZ*leapvars.leapZ)*100);
+			var rval = Math.floor(Math.abs(leapvars.leapZ*leapvars.leapZ)*100) + 30;
 			if (rval > 99)
 			{
 				rval = 99
 			}
-			else if (rval < 10)
-				{ 
-					rval = "00"
-				}
 			var hsh = "#";
-			var rd = hsh.concat("FF",rval,rval); 
+			var rd = hsh.concat(bval,rval,rval); 
 			ctx.fillStyle=rd;	
 			//console.log(rd);
 		}
@@ -456,12 +524,15 @@ $("#start").click(function(){
 			
 			ctx.fillStyle='#00CCFF';
 		}
+
+		
 		
 		ctx.strokeStyle = "#000";
 		ctx.beginPath();
         ctx.arc(imgX,imgY,12*(imgZ+0.1),0,2*Math.PI);
         ctx.closePath();
         ctx.fill();
+
         //console.log("X:" + leapvars.leapX + "Y: " + leapvars.leapY);
         //console.log("Z: " + imgZ + " X:" + imgX + " Y: " + imgY);
 	}
@@ -470,19 +541,15 @@ $("#start").click(function(){
 
 	function leap_drawScreen()
 	{
-	  var c=document.getElementById("mycanvas");
-	  var ctx=c.getContext("2d");
-	  ctx.clearRect(0,0,c.width,c.height);
-	  ctx.fillStyle="#FF3399";
-	  ctx.beginPath();
-	  ctx.arc(400,200,5,0,2*Math.PI);
-	  ctx.moveTo(0,200);
-	  ctx.lineTo(800,200);
-	  ctx.moveTo(400,0);
-	  ctx.lineTo(400,400);
-	  ctx.stroke();
-	  ctx.closePath();
+	  
+	  ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+	  ctx.fillRect(0,0,c.width,c.height);
+	  
+	  ctx.fill();
 	}
+
+
+
 
 
 

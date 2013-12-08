@@ -1,0 +1,269 @@
+/* /!\ You need to add vendor prefixes in order to render the CSS properly (or simply use http://leaverou.github.io/prefixfree/) /!\ */ #tridiv {
+  perspective: 800px;
+  position: absolute;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  background: black;
+  font-size: 100%;
+}
+.face {
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4);
+}
+.scene, .shape, .face, .face-wrapper, .cr {
+  position: absolute;
+  transform-style: preserve-3d;
+}
+.scene {
+  width: 80em;
+  height: 80em;
+  top: 50%;
+  left: 50%;
+  margin: -40em 0 0 -40em;
+}
+.shape {
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  transform-origin: 50%;
+}
+.face, .face-wrapper {
+  overflow: hidden;
+  transform-origin: 0 0;
+  backface-visibility: hidden;
+  /* hidden by default, prevent blinking and other weird rendering glitchs */
+}
+.face {
+  background-size: 100% 100%!important;
+  background-position: center;
+}
+.face-wrapper .face {
+  left: 100%;
+  width: 100%;
+  height: 100%
+}
+.photon-shader {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%
+}
+.side {
+  left: 50%;
+}
+.cr, .cr .side {
+  height: 100%;
+}
+[class*="cuboid"] .ft, [class*="cuboid"] .bk {
+  width: 100%;
+  height: 100%;
+}
+[class*="cuboid"] .bk {
+  left: 100%;
+}
+[class*="cuboid"] .rt {
+  transform: rotateY(-90deg) translateX(-50%);
+}
+[class*="cuboid"] .lt {
+  transform: rotateY(90deg) translateX(-50%);
+}
+[class*="cuboid"] .tp {
+  transform: rotateX(90deg) translateY(-50%);
+}
+[class*="cuboid"] .bm {
+  transform: rotateX(-90deg) translateY(-50%);
+}
+[class*="cuboid"] .lt {
+  left: 100%;
+}
+[class*="cuboid"] .bm {
+  top: 100%;
+}
+[class*="prism"] .ft, [class*="prism"] .bk {
+  width: 100%;
+  height: 100%;
+}
+[class*="prism"] .bk {
+  left: 100%;
+}
+[class*="prism"] .rt {
+  transform: rotateY(-90deg) translateX(-50%);
+}
+[class*="prism"] .lt {
+  transform: rotateY(90deg) translateX(-50%);
+}
+[class*="prism"] .bm {
+  transform: rotateX(-90deg) translateY(-50%);
+}
+[class*="prism"] .lt {
+  left: 100%;
+}
+[class*="prism"] .bm {
+  top: 100%;
+}
+[class*="prism"] .rt .face {
+  left: -100%;
+  transform-origin: 100% 0;
+}
+/* .cub-1 styles */
+.cub-1 {
+  transform:translate3D(0em, -2.25em, 0em) rotateX(0deg) rotateY(90deg) rotateZ(0deg);
+  opacity:1;
+  width:1.875em;
+  height:12.75em;
+  margin:-6.375em 0 0 -0.9375em;
+}
+.cub-1 .ft {
+  transform:translateZ(0.5625em);
+}
+.cub-1 .bk {
+  transform:translateZ(-0.5625em) rotateY(180deg);
+}
+.cub-1 .rt, .cub-1 .lt {
+  width:1.125em;
+  height:12.75em;
+}
+.cub-1 .tp, .cub-1 .bm {
+  width:1.875em;
+  height:1.125em;
+}
+.cub-1 .face {
+  background-color:#000000;
+}
+/* .pri-1 styles */
+.pri-1 {
+  transform:translate3D(0em, -11.0625em, 0em) rotateX(9.3deg) rotateY(0deg) rotateZ(0deg);
+  opacity:1;
+  width:1.125em;
+  height:5em;
+  margin:-2.5em 0 0 -0.5625em;
+}
+.pri-1 .rt .face {
+  transform:rotateZ(-29.89890183861456deg);
+}
+.pri-1 .lt .face {
+  transform:rotateZ(29.89890183861456deg);
+}
+.pri-1 .ft {
+  height:5.767635997529664em;
+  transform:translateZ(-1.4375em) rotateX(29.89890183861456deg);
+}
+.pri-1 .bk {
+  transform:translateZ(-1.4375em) rotateY(180deg);
+}
+.pri-1 .rt, .pri-1 .lt {
+  width:2.875em;
+  height:5em;
+}
+.pri-1 .rt .face, .pri-1 .lt .face {
+  height:5.767635997529664em;
+}
+.pri-1 .bm {
+  width:1.125em;
+  height:2.875em;
+}
+.pri-1 .face {
+  background-color:#000000;
+}
+/* .cub-2 styles */
+.cub-2 {
+  transform:translate3D(0em, -9.5em, 1.3125em) rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+  opacity:1;
+  width:0.875em;
+  height:0.375em;
+  margin:-0.1875em 0 0 -0.4375em;
+}
+.cub-2 .ft {
+  transform:translateZ(0.3125em);
+}
+.cub-2 .bk {
+  transform:translateZ(-0.3125em) rotateY(180deg);
+}
+.cub-2 .rt, .cub-2 .lt {
+  width:0.625em;
+  height:0.375em;
+}
+.cub-2 .tp, .cub-2 .bm {
+  width:0.875em;
+  height:0.625em;
+}
+.cub-2 .face {
+  background-color:#FFFFFF;
+}
+/* .cub-3 styles */
+.cub-3 {
+  transform:translate3D(0em, -10.4375em, 0.6875em) rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+  opacity:1;
+  width:0.875em;
+  height:0.375em;
+  margin:-0.1875em 0 0 -0.4375em;
+}
+.cub-3 .ft {
+  transform:translateZ(0.3125em);
+}
+.cub-3 .bk {
+  transform:translateZ(-0.3125em) rotateY(180deg);
+}
+.cub-3 .rt, .cub-3 .lt {
+  width:0.625em;
+  height:0.375em;
+}
+.cub-3 .tp, .cub-3 .bm {
+  width:0.875em;
+  height:0.625em;
+}
+.cub-3 .face {
+  background-color:#FFFFFF;
+}
+/* .cub-4 styles */
+.cub-4 {
+  transform:translate3D(0em, -11.375em, 0.125em) rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+  opacity:1;
+  width:0.875em;
+  height:0.375em;
+  margin:-0.1875em 0 0 -0.4375em;
+}
+.cub-4 .ft {
+  transform:translateZ(0.3125em);
+}
+.cub-4 .bk {
+  transform:translateZ(-0.3125em) rotateY(180deg);
+}
+.cub-4 .rt, .cub-4 .lt {
+  width:0.625em;
+  height:0.375em;
+}
+.cub-4 .tp, .cub-4 .bm {
+  width:0.875em;
+  height:0.625em;
+}
+.cub-4 .face {
+  background-color:#FFFFFF;
+}
+/* .cub-5 styles */
+.cub-5 {
+  transform:translate3D(0em, -12.3125em, -0.5625em) rotateX(0deg) rotateY(0deg) rotateZ(0deg);
+  opacity:1;
+  width:0.875em;
+  height:0.375em;
+  margin:-0.1875em 0 0 -0.4375em;
+}
+.cub-5 .ft {
+  transform:translateZ(0.3125em);
+}
+.cub-5 .bk {
+  transform:translateZ(-0.3125em) rotateY(180deg);
+}
+.cub-5 .rt, .cub-5 .lt {
+  width:0.625em;
+  height:0.375em;
+}
+.cub-5 .tp, .cub-5 .bm {
+  width:0.875em;
+  height:0.625em;
+}
+.cub-5 .face {
+  background-color:#FFFFFF;
+}
