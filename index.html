@@ -263,6 +263,7 @@ $("#start").click(function(){
 
         document.getElementById("start").classList.add("btn-primary");
         document.getElementById("stop").classList.remove("btn-primary");
+         midiBridge.disconectAll();
     });
 
 
@@ -502,6 +503,15 @@ $("#start").click(function(){
 			X, Y and Z coordinates of your guitar are sent in 3 separate MIDI modulation messages that you can then open in Reason, MAX, GuitarRig, FL Studio or whatever you prefer and map to any variable you want.
 			<br>
 			<i>(port1, Xcont, Leap X Coordinate)</i>
+		</p>
+		<p>
+			<b>App Variations:</b>
+			<ul>
+				<a href="leap-guitar-move.html"><li>Movement tracking</li></a>
+				<a href="halfX.html"><li>Dual pitch bend</li></a>
+				<a href="leap-drums.html"><li>For drummers</li></a>
+			</ul>
+
 		</p>
 
 		<div id="signature">

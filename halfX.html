@@ -58,11 +58,35 @@
 		border-radius: 25px;
 		background: #DAE5F5;
 		position:absolute;
-		margin-right:20px;
-		margin-top:450px;
+		margin-left:20px;
+		margin-top:540px;
 		padding:10px;
-		
+	}
 
+	#extrainst
+	{
+		border: 3px solid #615521;
+		border-radius: 25px;
+		background: #E6E8CC;
+		position:absolute;
+		margin-left:350px;
+		margin-top:450px;
+		padding:10px;	
+	}
+
+	.colu
+	{
+		width:48%;
+		display:inline-block;
+	}
+
+	#diagram
+	{
+		width:100%;
+		margin-top: 10px;
+		float:left;
+		position:relative;
+		padding-left: 5px;
 	}
 
 
@@ -95,7 +119,8 @@ var Settings = function()
 		this.minZ = 0;
 
 		this.MIDIchan = 1;
-		this.Xcont = 0;
+		this.XcontA = 0;
+		this.XcontB = 5;
 		this.Ycont = 1;
 		this.Zcont = 2;
 		this.default_vals = false;
@@ -136,7 +161,8 @@ var Settings = function()
 		var gui = new dat.GUI();
 
 		var f1 = gui.addFolder('X');
-		f1.add(settings, 'Xcont').step(1); 
+		f1.add(settings, 'XcontA').step(1);
+		f1.add(settings, 'XcontB').step(1);
 		f1.add(settings, 'minX', 0, 126).step(1);
 		f1.add(settings, 'maxX', 1, 127).step(1);
 		var f2 = gui.addFolder('Y'); 
@@ -156,6 +182,7 @@ var Settings = function()
 		f5.add(settings, 'Extra').step(1);
 		f5.add(settings, 'Extra_when_out',0,127).step(1);
 		f5.add(settings, 'Extra_when_in',0,127).step(1);
+
 
 		f1.open();
 		f2.open();
@@ -268,6 +295,7 @@ $("#start").click(function(){
 
         document.getElementById("start").classList.add("btn-primary");
         document.getElementById("stop").classList.remove("btn-primary");
+        midiBridge.disconectAll();
     });
 
 
@@ -277,7 +305,7 @@ $("#start").click(function(){
     var midiAccess,
     outputs,
     output,
-    midispeed = 100;
+    midispeed = 50;
     currentNote = 0,
     sequenceLength = 100,
     sequencePosition = 0,
@@ -329,13 +357,13 @@ $("#start").click(function(){
 	        
 			if (leapvars.leapZ < 0)
 			{
-	        noteNumber = settings.Xcont;
-	        var othernum = 5;
+	        noteNumber = settings.XcontA;
+	        var othernum = settings.XcontB;
 	        }
 	        else
 	        {
-	        noteNumber = 5;	
-	        var othernum = settings.Xcont;
+	        noteNumber = settings.XcontB;	
+	        var othernum = settings.XcontA;
 	        //console.log("sending to alternative 5");
 	        }
 
@@ -520,13 +548,14 @@ $("#start").click(function(){
 	{
 
 	  ctx.clearRect(0,0,c.width,c.height);
-	  ctx.strokeStyle="rgba(0, 0, 0, 0.8)";;
+	  ctx.strokeStyle="#555";
+	  
 	  ctx.beginPath();
-	  ctx.moveTo(400,0);
-	  ctx.lineTo(400,400);
+	  ctx.moveTo(150,0);
+	  ctx.lineTo(150,400);
 	  ctx.stroke();
 	  ctx.closePath();
-	  ctx.fill();
+	  
 	}
 
 
@@ -546,7 +575,16 @@ $("#start").click(function(){
 			The <a href="http://www.leapmotion.com" target="_blank">Leap Motion Sensor</a> can detect your guitar's head as if it were a hand. <br>
 			X, Y and Z coordinates of your guitar are sent in 3 separate MIDI modulation messages that you can then open in Reason, MAX, GuitarRig, FL Studio or whatever you prefer and map to any variable you want.
 			<br>
-			<i>(port1, Xcont, Leap X Coordinate)</i>
+			<i>(port1, XcontA, Leap X Coordinate)</i>
+		</p>
+		<p>
+			<b>App Variations:</b>
+			<ul>
+				<a href="index.html"><li>Basic</li></a>
+				<a href="leap-guitar-move.html"><li>Movement tracking</li></a>
+				<a href="leap-drums.html"><li>For drummers</li></a>
+			</ul>
+
 		</p>
 
 		<div id="signature">
@@ -582,7 +620,15 @@ $("#start").click(function(){
 
            
         </div>
+        <div id ="extrainst" class= "span7">
+        	<div class="colu">
+        	<p> The X-axis position can define two different MIDI messages or none, depending on the guitar position. When on the left, <i>XcontA</i> and <i>XcontB</i> variables = 0. On the right, either <i>XcontA</i> or <i>XcontB</i> will be addressed. This set up is ideal for mapping to two separate pitch-bend modulations. <a src= "http://www.youtube.com/watch?v=4Q5BuqnjPtA">Watch a video tutorial!</a></p>
+        	</div>
+        	<div class="colu">
+        		<img id="diagram" src="areas.png">
+        	</div>
 
+        </div>
 
 
 

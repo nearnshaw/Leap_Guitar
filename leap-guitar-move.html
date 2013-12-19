@@ -58,11 +58,26 @@
 		border-radius: 25px;
 		background: #DAE5F5;
 		position:absolute;
-		margin-right:20px;
-		margin-top:450px;
+		margin-left:20px;
+		margin-top:540px;
 		padding:10px;
-		
+	}
 
+	#extrainst
+	{
+		border: 3px solid #615521;
+		border-radius: 25px;
+		background: #E6E8CC;
+		position:absolute;
+		margin-left:350px;
+		margin-top:450px;
+		padding:10px;	
+	}
+
+	.colu
+	{
+		width:48%;
+		display:inline-block;
 	}
 
 
@@ -101,7 +116,8 @@ var Settings = function()
 		this.Ycont = 1;
 		this.Zcont = 2;
 		this.Movcont = 4;
-		this.sensitivity= 1;
+		this.sensitivity= 2;
+		this.easing = 5;
 		this.default_vals = false;
 		this.Xval_when_out = 0;
 		this.Yval_when_out = 0;
@@ -120,9 +136,6 @@ var Settings = function()
 	var oldExtra = 0;
 
 	var movement = 0;
-	var oldXpos = 0;
-	var oldYpos = 0;
-	var oldZpos = 0;
 	var oldMove = 0;
 
 
@@ -140,6 +153,11 @@ var Settings = function()
 	 	salv: false
 	 };
 
+	 var oldPos = new Array();
+	 for (i = 0; i < 15; i++)
+	{
+	 oldPos.push(leapvars);
+	}
 
 	 window.onload = function() 
 	 {
@@ -161,7 +179,8 @@ var Settings = function()
 		fMov.add(settings, 'Movcont').step(1);
 		fMov.add(settings, 'minMov', 0, 126).step(1);
 		fMov.add(settings, 'maxMov', 0, 126).step(1);
-		fMov.add(settings, 'sensitivity', 0.25, 4).step(0.25);
+		fMov.add(settings, 'sensitivity', 0.25, 8).step(0.25);
+		fMov.add(settings, 'easing', 0, 25).step(1);
 		var f5 = gui.addFolder('Extra on/off message');
 		f5.add(settings, 'Extra').step(1);
 		f5.add(settings, 'Extra_when_out',0,127).step(1);
@@ -198,8 +217,8 @@ var Settings = function()
 
 	var controller = new Leap.Controller({enableGestures: true});
     var region = new Leap.UI.Region(
-    	[-50, 200, -100], 
-    	[200, 300, 100]
+    	[-50, 250, -100], 
+    	[200, 350, 100]
     );
 
     controller.addStep(new Leap.UI.Cursor())
@@ -284,8 +303,10 @@ $("#start").click(function(){
         currentNote = sequenceLength;
         clearInterval(runningInterval);
 
+
         document.getElementById("start").classList.add("btn-primary");
         document.getElementById("stop").classList.remove("btn-primary");
+        midiBridge.disconectAll();
     });
 
 
@@ -295,7 +316,7 @@ $("#start").click(function(){
     var midiAccess,
     outputs,
     output,
-    midispeed = 100;
+    midispeed = 33;
     currentNote = 0,
     sequenceLength = 100,
     sequencePosition = 0,
@@ -408,10 +429,27 @@ $("#start").click(function(){
 	   	}
 
 	   	//send for Move
-	   	movement=Math.floor(getDist(leapvars.leapX, leapvars.leapY, leapvars.leapZ, oldXpos, oldYpos, oldZpos));
-			//velocity = Math.floor(movement/150*(settings.maxZ-settings.minZ)) + settings.minZ;   //0-300   to 0-127;
-		velocity = movement*settings.sensitivity;
-		//velocity = Math.floor(Math.pow(movement,2)/150/150*(settings.maxZ-settings.minZ)) + settings.minZ;   //0-300   to 0-127;
+	   	//movement=getDist(leapvars.leapX, leapvars.leapY, leapvars.leapZ, oldPos[settings.easing].leapX, oldPos[settings.easing].leapY, oldPos[settings.easing].leapZ);
+	   	//movement = movement/(settings.easing+1); //if easing = 0 it´s /1 ...all good
+
+	   	movement = 0;
+
+	   	//used to divide total by number of segments
+	   	var segmentsum = 0;
+
+	   	for (var i = settings.easing; i > -1; i--)
+	   	{
+	   		movement += getDist(leapvars.leapX, leapvars.leapY, leapvars.leapZ, oldPos[i].leapX, oldPos[i].leapY, oldPos[i].leapZ);
+	   		segmentsum += i+1;
+	   	}
+	   	movement = movement/(segmentsum)*settings.sensitivity; //if easing = 0 it´s /1 ...all good
+	   
+	   	
+			
+		velocity = Math.floor((movement/150)*(settings.maxMov-settings.minMov)+settings.minMov);
+
+		//console.log("movement: " + movement + " velocity " + velocity + " oldPos length " + oldPos.length + " oldPos[settings.easing].leapZ " +  oldPos[settings.easing].leapZ);
+		
 		if (velocity != oldMove)
 		{
 			noteNumber = settings.Movcont;
@@ -431,11 +469,20 @@ $("#start").click(function(){
 
 
 
+	    var cloneleapvars =
+		 {
+		 	leapX: leapvars.leapX,
+		 	leapY: leapvars.leapY,
+		 	leapZ:leapvars.leapZ,
+		 };
+		
+	   	
+	   	oldPos.unshift(cloneleapvars);  //unshift like push but adds to the start of the array
 
-		oldXpos = leapvars.leapX;
-	   	oldYpos = leapvars.leapY;
-	   	oldZpos = leapvars.leapZ;
-	   	oldMove = movement;
+	   	if (oldPos.lenght > 500)
+	   	{
+	   		oldPos.splice(150,300);
+	   	}//keep the array from getting huge and affecting memmory
 
 	}  
 
@@ -533,6 +580,16 @@ function drawScreen()
         ctx.closePath();
         ctx.fill();
 
+
+         //movement strength bar
+        ctx.beginPath();
+        ctx.fillStyle = "#8E0000";
+        var barlen = (oldMove/settings.maxMov)*c.width;
+        //console.log("movement " + oldMove + " barlen " + barlen);
+        ctx.fillRect(0,c.height - 5, barlen, c.height);
+        ctx.closePath();
+        ctx.fill();
+
         //console.log("X:" + leapvars.leapX + "Y: " + leapvars.leapY);
         //console.log("Z: " + imgZ + " X:" + imgX + " Y: " + imgY);
 	}
@@ -544,7 +601,10 @@ function drawScreen()
 	  
 	  ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
 	  ctx.fillRect(0,0,c.width,c.height);
-	  
+	  ctx.fill();
+
+	  ctx.fillStyle = "rgba(0, 0, 0, 1)";
+	  ctx.fillRect(0,c.height - 5, c.width, c.height);
 	  ctx.fill();
 	}
 
@@ -569,6 +629,16 @@ function drawScreen()
 			X, Y and Z coordinates of your guitar are sent in 3 separate MIDI modulation messages that you can then open in Reason, MAX, GuitarRig, FL Studio or whatever you prefer and map to any variable you want.
 			<br>
 			<i>(port1, Xcont, Leap X Coordinate)</i>
+			
+		</p>
+		<p>
+			<b>App Variations:</b>
+			<ul>
+				<a href="index.html"><li>Basic</li></a>
+				<a href="halfX.html"><li>Dual pitch bend</li></a>
+				<a href="leap-drums.html"><li>For drummers</li></a>
+			</ul>
+
 		</p>
 
 		<div id="signature">
@@ -605,7 +675,16 @@ function drawScreen()
            
         </div>
 
+         </div>
+        <div id ="extrainst" class= "span7">
+        	<div class="">
+        	<p> In this version, the guitar's moving speed will be sent as an extra MIDI variable. Through easing you can make changes less abrupt and through sensitivity you can magnify or reduce the imact of your movements.  <a src= "http://www.youtube.com/watch?v=4Q5BuqnjPtA">Watch a video demo!</a></p>
+        	</div>
+        	<div class="">
+        		
+        	</div>
 
+        </div>
 
 
 

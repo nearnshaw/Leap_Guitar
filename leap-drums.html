@@ -52,19 +52,27 @@
     	border:3px #555 solid
 	}
 
-	#clarific
+		#clarific
 	{
 		border: 3px solid #5195F5;
 		border-radius: 25px;
 		background: #DAE5F5;
 		position:absolute;
-		margin-right:20px;
-		margin-top:450px;
+		margin-left:20px;
+		margin-top:540px;
 		padding:10px;
-		
-
 	}
 
+	#extrainst
+	{
+		border: 3px solid #615521;
+		border-radius: 25px;
+		background: #E6E8CC;
+		position:absolute;
+		margin-left:350px;
+		margin-top:450px;
+		padding:10px;	
+	}
 
 
 	#signature
@@ -102,9 +110,9 @@ var Settings = function()
 		this.Xval_when_out = 0;
 		this.Yval_when_out = 0;
 		this.Zval_when_out = 0;
-		//this.Extra = 3;
-		//this.Extra_when_out = 0;
-		//this.Extra_when_in = 127;
+		this.Extra = 3;
+		this.Extra_when_out = 0;
+		this.Extra_when_in = 127;
 		this.Trigger = 4;
 		this.ModeB = 5;
 	}
@@ -115,7 +123,7 @@ var Settings = function()
 	var oldX = 0;
 	var oldY = 0;
 	var oldZ = 0;
-	//var oldExtra = 0;
+	var oldExtra = 0;
 	var oldTrigger = 0;
 	//var oldTriggerB = false;
 	//var TriggerAtail = false;
@@ -162,10 +170,10 @@ var Settings = function()
 		f4.add(settings, 'Xval_when_out',0,127).step(1);
 		f4.add(settings, 'Yval_when_out',0,127).step(1);
 		f4.add(settings, 'Zval_when_out',0,127).step(1);
-		// var f5 = gui.addFolder('Extra on/off message');
-		// f5.add(settings, 'Extra').step(1);
-		// f5.add(settings, 'Extra_when_out',0,127).step(1);
-		// f5.add(settings, 'Extra_when_in',0,127).step(1);
+		var f5 = gui.addFolder('Note on/off');
+		f5.add(settings, 'Extra').step(1);
+		//f5.add(settings, 'Extra_when_out',0,127).step(1);
+		//f5.add(settings, 'Extra_when_in',0,127).step(1);
 		f4.add(settings, 'Trigger').step(1);
 		f4.add(settings, 'ModeB').step(1);
 
@@ -216,12 +224,12 @@ var Settings = function()
         guitar_out = false;
 
          var leapPosition = region.mapToXY(
-        	frame.fingers[0], 300, 150);
+        	frame.fingers[0].tipPosition, 300, 150);
 
         leapvars.leapX = leapPosition[0];
         leapvars.leapY = leapPosition[1];
         leapvars.leapZ = leapPosition[2];
-        console.log ( "X: " + leapvars.leapX + " Y:" + leapvars.leapY + " z: " + leapvars.leapZ  );
+        //console.log ( "X: " + leapvars.leapX + " Y:" + leapvars.leapY + " z: " + leapvars.leapZ  );
       }
       else if (frame.cursorPosition) {
         //leap_enabled = true;
@@ -307,6 +315,7 @@ $("#start").click(function(){
 
         document.getElementById("start").classList.add("btn-primary");
         document.getElementById("stop").classList.remove("btn-primary");
+        midiBridge.disconectAll();
     });
 
 
@@ -316,7 +325,7 @@ $("#start").click(function(){
     var midiAccess,
     outputs,
     output,
-    midispeed = 100;
+    midispeed = 33;
     currentNote = 0,
     sequenceLength = 100,
     sequencePosition = 0,
@@ -325,7 +334,7 @@ $("#start").click(function(){
     //btnStart = document.getElementById("start"),
     //btnStop = document.getElementById("stop");
 
-    var screenfps = 60;
+    var screenfps = 30;
 
     drawInterval = setInterval(drawScreen, Math.round(1000/screenfps));
     
@@ -371,7 +380,7 @@ $("#start").click(function(){
 	
 		//send for X
 		
-		velocity = Math.floor(((leapvars.leapX)/150*(settings.maxX-settings.minX)) + settings.minX);   //0-300   
+		velocity = Math.floor(((leapvars.leapX)/250*(settings.maxX-settings.minX)) + settings.minX);   //0-300   
 		
 
 		if (velocity != oldX)
@@ -400,7 +409,7 @@ $("#start").click(function(){
 	        
 	        output.sendMIDIMessage(midiMessage);
 
-	        console.log("X sending " + velocity + " to port " + settings.Xcont );
+	        //console.log("X sending " + velocity + " to port " + settings.Xcont );
 	     	oldX = velocity;
 
 	     	midiMessage = midiAccess.createMIDIMessage(midiBridge.CONTROL_CHANGE, 0, othernum, 0, sequencePosition);
@@ -467,22 +476,30 @@ $("#start").click(function(){
 	    }
 
         //send for Extra
-  //       if (guitar_out != oldExtra)
-		// {
-	 //        if (guitar_out == true)
-	 //        {
-	 //        sendMIDI(settings.Extra, settings.Extra_when_out);
-	 //        //console.log("extra says guitar out");
-	 //        oldExtra = false;
-	 //    	}
-	 //    	else
-	 //    	{
-	 //    	newMIDI(settings.Extra, settings.Extra_when_in);	
-	 //    	//console.log("extra says guitar in");
-	 //    	oldExtra = true;
-	 //    	}
+        if (guitar_out != oldExtra)
+		{
+	        if (guitar_out == true)
+	        {
+	        //sendMIDI(settings.Extra, settings.Extra_when_out);
+	        //console.log("extra says guitar out");
+	         	midiMessage = midiAccess.createMIDIMessage(midiBridge.NOTE_OFF, 1, 80, 0, sequencePosition);
+        
+        		output.sendMIDIMessage(midiMessage);
 
-	 //   	}
+	             //midiBridge.sendMidiEvent(midiBridge.NOTE_ON,1,80,100);
+	        oldExtra = false;
+	    	}
+	    	else
+	    	{
+	    		midiMessage = midiAccess.createMIDIMessage(midiBridge.NOTE_ON, 1, 80, 0, sequencePosition);
+        
+        		output.sendMIDIMessage(midiMessage);
+	    		//newMIDI(settings.Extra, settings.Extra_when_in);	
+	    		//console.log("extra says guitar in");
+	    	oldExtra = true;
+	    	}
+
+	   	}
 
 	   	//send for Trigger
 	   	if (leapvars.Trigger != oldTrigger)
@@ -649,14 +666,26 @@ function getDist(x, y, z, oldx, oldy, oldz)
 		
 		<div id="rules" class="span3">	
 			<h4> Press <b>Start</b> and this app will send a stream of MIDI messages to MIDI Port 1. </h4>
-			<p>
-			The <a href="http://www.leapmotion.com" target="_blank">Leap Motion Sensor</a> can detect your guitar's head as if it were a hand. <br>
-			X, Y and Z coordinates of your guitar are sent in 3 separate MIDI modulation messages that you can then open in Reason, MAX, GuitarRig, FL Studio or whatever you prefer and map to any variable you want.
+		<p>
+			The <a href="http://www.leapmotion.com" target="_blank">Leap Motion Sensor</a> can detect your drumstick´s head as if it were a hand. 
+			<br>
+			X, Y and Z coordinates of your stick´s tip are sent in 3 separate MIDI modulation messages that you can then open in Reason, MAX, BFD, FL Studio or whatever you prefer and map to any variable you want. 
 			<br>
 			<i>(port1, Xcont, Leap X Coordinate)</i>
+			
+			
+		</p>
+		<p>
+			<b>App Variations for guitarists:</b>
+			<ul>
+				<a href="index.html"><li>Basic</li></a>
+				<a href="leap-guitar-move.html"><li>Movement tracking</li></a>
+				<a href="halfX.html"><li>Dual pitch bend</li></a>
+			</ul>
+
 		</p>
 
-		<div id="signature">
+			<div id="signature">
 				<p>App by: <a href="http://nearnshaw.github.com" target="blank">Nicolas Earnshaw</a></p>
 			</div>
 
@@ -691,7 +720,15 @@ function getDist(x, y, z, oldx, oldy, oldz)
         </div>
 
 
+        <div id ="extrainst" class= "span7">
+        	<div class="colu">
+        	<p> Show the sensor two or more extended fingers to send an additional MIDI parameter, ideal for switching an effect on or off.</p> <a src= "http://www.youtube.com/watch?v=4Q5BuqnjPtA">Watch a video demo!</a></p>
+        	</div>
+        	<div class="colu">
+        		
+        	</div>
 
+        </div>
 
 
 
