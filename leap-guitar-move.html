@@ -109,14 +109,14 @@ var Settings = function()
 		this.maxZ = 127;
 		this.minZ = 0;
 		this.minMov = 0;
-		this.maxMov = 127;
+		this.maxMov = 90;
 
 		this.MIDIchan = 1;
 		this.Xcont = 0;
 		this.Ycont = 1;
 		this.Zcont = 2;
 		this.Movcont = 4;
-		this.sensitivity= 2;
+		this.sensitivity= 4;
 		this.easing = 5;
 		this.default_vals = false;
 		this.Xval_when_out = 0;
@@ -429,11 +429,7 @@ $("#start").click(function(){
 	   	}
 
 	   	//send for Move
-	   	//movement=getDist(leapvars.leapX, leapvars.leapY, leapvars.leapZ, oldPos[settings.easing].leapX, oldPos[settings.easing].leapY, oldPos[settings.easing].leapZ);
-	   	//movement = movement/(settings.easing+1); //if easing = 0 it´s /1 ...all good
-
 	   	movement = 0;
-
 	   	//used to divide total by number of segments
 	   	var segmentsum = 0;
 
@@ -444,7 +440,8 @@ $("#start").click(function(){
 	   	}
 	   	movement = movement/(segmentsum)*settings.sensitivity; //if easing = 0 it´s /1 ...all good
 	   
-	   	
+	   	//movement=getDist(leapvars.leapX, leapvars.leapY, leapvars.leapZ, oldPos[settings.easing].leapX, oldPos[settings.easing].leapY, oldPos[settings.easing].leapZ);
+	   	//movement = movement/(settings.easing+1); //if easing = 0 it´s /1 ...all good
 			
 		velocity = Math.floor((movement/150)*(settings.maxMov-settings.minMov)+settings.minMov);
 
@@ -542,7 +539,7 @@ function drawScreen()
 		{
 			ctx.fillStyle='red';
 			ctx.font="16px Arial";
-			ctx.fillText('Guitar out of sensor range', 10, 130);
+			ctx.fillText('Guitar out of sensor range', 50, c.height/2);
 		}
 
 		
@@ -584,9 +581,9 @@ function drawScreen()
          //movement strength bar
         ctx.beginPath();
         ctx.fillStyle = "#8E0000";
-        var barlen = (oldMove/settings.maxMov)*c.width;
+        var barlen = (oldMove/settings.maxMov)*c.height;
         //console.log("movement " + oldMove + " barlen " + barlen);
-        ctx.fillRect(0,c.height - 5, barlen, c.height);
+        ctx.fillRect(c.width-7,c.height-barlen, c.width,c.height);
         ctx.closePath();
         ctx.fill();
 
@@ -604,7 +601,7 @@ function drawScreen()
 	  ctx.fill();
 
 	  ctx.fillStyle = "rgba(0, 0, 0, 1)";
-	  ctx.fillRect(0,c.height - 5, c.width, c.height);
+	  ctx.fillRect(c.width-30,0, c.width,c.height);
 	  ctx.fill();
 	}
 
@@ -686,10 +683,23 @@ function drawScreen()
 
         </div>
 
+        <script type="text/javascript">
+
+		  var _gaq = _gaq || [];
+		  _gaq.push(['_setAccount', 'UA-46638598-1']);
+		  _gaq.push(['_trackPageview']);
+
+		  (function() {
+		    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+		    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+		    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		  })();
+
+		</script>
 
 
-
-
+        
+        
 
 	
 		</body>
