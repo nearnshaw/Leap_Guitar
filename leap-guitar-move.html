@@ -3,6 +3,9 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
 
+<link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+<link rel="stylesheet" href="leap-guitar.css">		
+
 <script type="text/javascript" src="leap.min.js"></script>
 <script type="text/javascript" src="jquery/jquery.js"></script>
 <script type="text/javascript" src="js/dat.Gui.min.js"></script>
@@ -11,89 +14,10 @@
 <script type="text/javascript" src="MIDIBridge/lib/Midiselector.js"></script>
 <script type="text/javascript" src="js/setup-connections-direct.js"></script>
 
-	
-		
-<link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
+
 		
 	
-	<style>
-
-	body
-	{
-		background: #EEE;
-	}
-
-	#rules
-	{
-		border: 5px solid #615521;
-		border-radius: 15px;
-		background: #E6E8CC;
-		position:absolute;
-		z-index: -1;
-		margin-right:20px;
-		margin-top:20px;
-		padding:10px;
-		
-	}
-
-	#cont
-	{
-		width:100%;
-
-	}
-	#mycanvas
-	{
-	    margin-top: 10px;
-	    margin-left: auto;
-    	margin-right: auto;
-    	display: block;
-    	height:400px;
-    	width:600px;
-    	border:3px #555 solid
-	}
-
-	#clarific
-	{
-		border: 3px solid #5195F5;
-		border-radius: 25px;
-		background: #DAE5F5;
-		position:absolute;
-		margin-left:20px;
-		margin-top:540px;
-		padding:10px;
-	}
-
-	#extrainst
-	{
-		border: 3px solid #615521;
-		border-radius: 25px;
-		background: #E6E8CC;
-		position:absolute;
-		margin-left:350px;
-		margin-top:450px;
-		padding:10px;	
-	}
-
-	.colu
-	{
-		width:48%;
-		display:inline-block;
-	}
-
-
-
-	#signature
-	{
-		float:right;
-	}
-
-	#signature p
-	{
-		color:#A6A6A6;
-		font-size: small;
-	}
-
-	</style>
+	
 
 
 <script type="text/javascript">
@@ -116,7 +40,7 @@ var Settings = function()
 		this.Ycont = 1;
 		this.Zcont = 2;
 		this.Movcont = 4;
-		this.sensitivity= 4;
+		this.sensitivity= 3.5;
 		this.easing = 5;
 		this.default_vals = false;
 		this.Xval_when_out = 0;
@@ -512,8 +436,8 @@ $("#start").click(function(){
 function getDist(x, y, z, oldx, oldy, oldz)
 {
 	var dx = Math.abs(x - oldx);
-	var dy = Math.abs(y - oldy);
-	var dz = Math.abs(z - oldz)*150;
+	var dy = Math.abs(y - oldy)*1.5;
+	var dz = Math.abs(z - oldz)*200;
 	//return Math.sqrt(Math.pow(dx,2)+Math.pow(dy,2));
 	var plaindist = Math.sqrt(Math.pow(dx,2)+Math.pow(dy,2));
 	return Math.sqrt(Math.pow(plaindist,2)+Math.pow(dz,2));
@@ -583,7 +507,7 @@ function drawScreen()
         ctx.fillStyle = "#8E0000";
         var barlen = (oldMove/settings.maxMov)*c.height;
         //console.log("movement " + oldMove + " barlen " + barlen);
-        ctx.fillRect(c.width-7,c.height-barlen, c.width,c.height);
+        ctx.fillRect(c.width-12,c.height-barlen, c.width,c.height);
         ctx.closePath();
         ctx.fill();
 
@@ -601,7 +525,7 @@ function drawScreen()
 	  ctx.fill();
 
 	  ctx.fillStyle = "rgba(0, 0, 0, 1)";
-	  ctx.fillRect(c.width-30,0, c.width,c.height);
+	  ctx.fillRect(c.width-12,0, c.width,c.height);
 	  ctx.fill();
 	}
 
@@ -675,7 +599,7 @@ function drawScreen()
          </div>
         <div id ="extrainst" class= "span7">
         	<div class="">
-        	<p> In this version, the guitar's moving speed will be sent as an extra MIDI variable. Through easing you can make changes less abrupt and through sensitivity you can magnify or reduce the imact of your movements.  <a src= "http://www.youtube.com/watch?v=4Q5BuqnjPtA">Watch a video demo!</a></p>
+        	<p> In this version, the guitar's moving speed will be sent as an extra MIDI variable. Through easing you can make changes less abrupt and through sensitivity you can magnify or reduce the imact of your movements.  <a src= "http://www.youtube.com/watch?v=NnATgr5yNEA">Watch a video demo!</a></p>
         	</div>
         	<div class="">
         		

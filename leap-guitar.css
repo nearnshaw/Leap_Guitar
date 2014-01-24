@@ -1,0 +1,90 @@
+body
+	{
+		background: #EEE;
+	}
+
+	#rules
+	{
+		border: 5px solid #615521;
+		border-radius: 15px;
+		background: #E6E8CC;
+		position:absolute;
+		z-index: -1;
+		margin-right:2%;
+		margin-top:2%;
+		padding:10px;
+		width:20%;
+		max-height:75%;
+		
+	}
+
+	#cont
+	{
+		width:100%;
+		pointer-events:none;
+		z-index: -10;
+
+	}
+	#mycanvas
+	{
+	    margin-top: 2%;
+	    margin-left: 27%;
+    	position: absolute;
+    	height:400px;
+    	width:600px;
+    	border:3px #555 solid
+	}
+
+	#clarific
+	{
+		border: 3px solid #5195F5;
+		border-radius: 25px;
+		background: #DAE5F5;
+		position:absolute;
+		margin-right:2%;
+		margin-top:47%;
+		padding:1%;
+		width: 19%;
+		padding-left: 2%;
+		
+
+	}
+
+
+
+	#signature
+	{
+		float:right;
+	}
+
+	#signature p
+	{
+		color:#A6A6A6;
+		font-size: small;
+	}
+
+	#extrainst
+	{
+		border: 3px solid #615521;
+		border-radius: 25px;
+		background: #E6E8CC;
+		position:absolute;
+		margin-left:350px;
+		margin-top:450px;
+		padding:10px;	
+	}
+
+	.colu
+	{
+		width:48%;
+		display:inline-block;
+	}
+
+	#diagram
+	{
+		width:100%;
+		margin-top: 10px;
+		float:left;
+		position:relative;
+		padding-left: 5px;
+	}

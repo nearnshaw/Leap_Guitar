@@ -11,99 +11,11 @@
 <script type="text/javascript" src="MIDIBridge/lib/Midiselector.js"></script>
 <script type="text/javascript" src="js/setup-connections-direct.js"></script>
 
-	
+<link rel="stylesheet" href="leap-guitar.css">
 		
 <link rel="stylesheet" href="bootstrap/css/bootstrap.min.css">
 		
 	
-	<style>
-
-	body
-	{
-		background: #EEE;
-	}
-
-	#rules
-	{
-		border: 5px solid #615521;
-		border-radius: 15px;
-		background: #E6E8CC;
-		position:absolute;
-		z-index: -1;
-		margin-right:20px;
-		margin-top:20px;
-		padding:10px;
-		
-	}
-
-	#cont
-	{
-		width:100%;
-
-	}
-	#mycanvas
-	{
-	    margin-top: 10px;
-	    margin-left: auto;
-    	margin-right: auto;
-    	display: block;
-    	height:400px;
-    	width:600px;
-    	border:3px #555 solid
-	}
-
-	#clarific
-	{
-		border: 3px solid #5195F5;
-		border-radius: 25px;
-		background: #DAE5F5;
-		position:absolute;
-		margin-left:20px;
-		margin-top:540px;
-		padding:10px;
-	}
-
-	#extrainst
-	{
-		border: 3px solid #615521;
-		border-radius: 25px;
-		background: #E6E8CC;
-		position:absolute;
-		margin-left:350px;
-		margin-top:450px;
-		padding:10px;	
-	}
-
-	.colu
-	{
-		width:48%;
-		display:inline-block;
-	}
-
-	#diagram
-	{
-		width:100%;
-		margin-top: 10px;
-		float:left;
-		position:relative;
-		padding-left: 5px;
-	}
-
-
-
-	#signature
-	{
-		float:right;
-	}
-
-	#signature p
-	{
-		color:#A6A6A6;
-		font-size: small;
-	}
-
-	</style>
-
 
 <script type="text/javascript">
 
@@ -202,7 +114,11 @@ var Settings = function()
 
 //-------------------------leap stuff-------------------
 
- function startLeap() 
+ 
+
+
+
+	function startLeap() 
 	 {
 
 	var controller = new Leap.Controller({enableGestures: true});
@@ -243,10 +159,6 @@ var Settings = function()
       	}
 
       }
-
-
-
-	
       done();
     });
 
@@ -563,7 +475,7 @@ $("#start").click(function(){
 
 
 
-</script>
+      </script>
 
 
 	</head>
@@ -624,7 +536,7 @@ $("#start").click(function(){
         </div>
         <div id ="extrainst" class= "span7">
         	<div class="colu">
-        	<p> The X-axis position can define two different MIDI messages or none, depending on the guitar position. When on the left, <i>XcontA</i> and <i>XcontB</i> variables = 0. On the right, either <i>XcontA</i> or <i>XcontB</i> will be addressed. This set up is ideal for mapping to two separate pitch-bend modulations. <a src= "http://www.youtube.com/watch?v=4Q5BuqnjPtA">Watch a video tutorial!</a></p>
+        	<p> The X-axis position can define two different MIDI messages or none, depending on the guitar position. When on the left, <i>XcontA</i> and <i>XcontB</i> variables = 0. On the right, either <i>XcontA</i> or <i>XcontB</i> will be addressed. This set up is ideal for mapping to two separate pitch-bend modulations. <a href= "http://www.youtube.com/watch?v=4Q5BuqnjPtA">Watch a video tutorial!</a></p>
         	</div>
         	<div class="colu">
         		<img id="diagram" src="areas.png">
@@ -633,6 +545,9 @@ $("#start").click(function(){
         </div>
 
         <script type="text/javascript">
+
+
+
 
 		  var _gaq = _gaq || [];
 		  _gaq.push(['_setAccount', 'UA-46638598-1']);
