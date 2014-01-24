@@ -542,70 +542,79 @@ function drawScreen()
 		
 	<body>
 
+		<div class="span3" id="cont1">
+
+			<div id="logobox" class="span3">
+				<img id="logo" src="logo.png">
+			</div>
 		
-		<div id="rules" class="span3">	
-			<h4> Press <b>Start</b> and this app will send a stream of MIDI messages to MIDI Port 1. </h4>
-			<p>
-			The <a href="http://www.leapmotion.com" target="_blank">Leap Motion Sensor</a> can detect your guitar's head as if it were a hand. <br>
-			X, Y and Z coordinates of your guitar are sent in 3 separate MIDI modulation messages that you can then open in Reason, MAX, GuitarRig, FL Studio or whatever you prefer and map to any variable you want.
-			<br>
-			<i>(port1, Xcont, Leap X Coordinate)</i>
-			
-		</p>
-		<p>
-			<b>App Variations:</b>
-			<ul>
-				<a href="index.html"><li>Basic</li></a>
-				<a href="halfX.html"><li>Dual pitch bend</li></a>
-				<a href="leap-drums.html"><li>For drummers</li></a>
-			</ul>
+			<div id="rules" class="span3">	
+				<h4> Press <b>Start</b> and this app will send a stream of MIDI messages to MIDI Port 1. </h4>
+				<p>
+				The <a href="http://www.leapmotion.com" target="_blank">Leap Motion Sensor</a> can detect your guitar's head as if it were a hand. <br>
+				X, Y and Z coordinates of your guitar are sent in 3 separate MIDI modulation messages that you can then open in Reason, MAX, GuitarRig, FL Studio or whatever you prefer and map to any variable you want.
+				<br>
+				<i>(port1, Xcont, Leap X Coordinate)</i>
+				
+				</p>
+				<p>
+				<b>App Variations:</b>
+					<ul>
+						<a href="index.html"><li>Basic</li></a>
+						<a href="halfX.html"><li>Dual pitch bend</li></a>
+						<a href="leap-drums.html"><li>For drummers</li></a>
+					</ul>
 
-		</p>
+				</p>
 
-		<div id="signature">
-				<p>App by: <a href="http://nearnshaw.github.com" target="blank">Nicolas Earnshaw</a></p>
+				<div id="signature">
+					<p>App by: <a href="http://nearnshaw.github.com" target="blank">Nicolas Earnshaw</a></p>
+				</div>
+
 			</div>
 
-		</div>
-
 
 		
-		<div id="cont" class="span6">
-			<canvas id="mycanvas" ></canvas>
-		</div>
+		
 	
 
-		<div id="clarific" class="span3">
-            
-            <div id="messages"><b>Select a MIDI output</b></div>
-            <br>
-            <!-- dropdown menu for selecting a MIDI output -->
-            <select id="outputs"></select>
+			<div id="clarific" class="span3">
+	            
+	            <div id="messages"><b>Select a MIDI output</b></div>
+	            <br>
+	            <!-- dropdown menu for selecting a MIDI output -->
+	            <select id="outputs"></select>
 
-            <!-- button that starts the sequence -->
-            <a id="start" class="btn btn-primary btn-medium pull-left">
-            Start
-            </a>
-            
+	            <!-- button that starts the sequence -->
+	            <a id="start" class="btn btn-primary btn-medium pull-left">
+	            Start
+	            </a>
+	            
 
-            <!-- button that stops the sequence -->
-             <a id="stop" class="btn btn-medium pull-left" style="margin-left:7px">
-            Stop
-            </a>
+	            <!-- button that stops the sequence -->
+	             <a id="stop" class="btn btn-medium pull-left" style="margin-left:7px">
+	            Stop
+	            </a>
 
-           
-        </div>
+	           
+	        </div>
 
          </div>
-        <div id ="extrainst" class= "span7">
-        	<div class="">
-        	<p> In this version, the guitar's moving speed will be sent as an extra MIDI variable. Through easing you can make changes less abrupt and through sensitivity you can magnify or reduce the imact of your movements.  <a src= "http://www.youtube.com/watch?v=NnATgr5yNEA">Watch a video demo!</a></p>
-        	</div>
-        	<div class="">
-        		
-        	</div>
 
-        </div>
+        <div id="cont" class="span6">
+			<canvas id="mycanvas" ></canvas>
+		
+
+	        <div id ="extrainst" class= "span7">
+	        	<div class="">
+	        	<p> In this version, the guitar's moving speed will be sent as an extra MIDI variable. Through easing you can make changes less abrupt and through sensitivity you can magnify or reduce the imact of your movements.  <a src= "http://www.youtube.com/watch?v=NnATgr5yNEA">Watch a video demo!</a></p>
+	        	</div>
+	        	<div class="">
+	        		
+	        	</div>
+
+	        </div>
+	    </div>
 
         <script type="text/javascript">
 
