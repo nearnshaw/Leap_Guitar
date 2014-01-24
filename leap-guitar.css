@@ -18,8 +18,7 @@
 
 	#cont1
 	{
-		display: inline-block;	
-		pointer-events:none;
+		display: inline-block;			
 		z-index: -10;
 
 
@@ -29,7 +28,6 @@
 	#cont2
 	{
 		display: inline-block;		
-		pointer-events:none;
 		z-index: -10;
 
 	}
